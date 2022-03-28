@@ -22,6 +22,7 @@ int main(int argc, char* argv[]){
         printf("Invalid arguments\n");
         exit(EXIT_FAILURE);
     }
+    
     int port = atoi(argv[2]);
     char *ipv4address = argv[1];
 
