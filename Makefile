@@ -9,5 +9,8 @@ test2: sqltest2.c sqlite3.o
 sqlite3.o: sqlite3.c sqlite3.h
 	gcc -c sqlite3.c -o sqlite3.o
 
+serverA.o: serverA.c serverA.h
+
+
 clean:
 	rm -f *.o
