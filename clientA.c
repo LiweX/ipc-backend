@@ -13,8 +13,8 @@
 int clientA(int port,char *address) {
 
     int sockfd;
-    char *buffer = (char *)malloc(sizeof(char));
-    char *aux = (char *)malloc(sizeof(char));
+    char *buffer = (char *)malloc(sizeof(char)*BUFF_SIZE);
+    char *aux = (char *)malloc(sizeof(char)*BUFF_SIZE);
     char *input = "SELECT * FROM Cars;";
 
     struct sockaddr_in servaddr;
@@ -43,6 +43,7 @@ int clientA(int port,char *address) {
         sprintf(aux,"Query: %s\n",input);
 
         write(1,aux,strlen(aux));
+        memset(aux,0,BUFF_SIZE);
             
         bytes = recvfrom(sockfd, (char *)buffer, BUFF_SIZE, 
                     MSG_WAITALL, (struct sockaddr *) &servaddr,
@@ -52,6 +53,8 @@ int clientA(int port,char *address) {
         sprintf(aux,"Server: %s\n",buffer);
 
         write(1,aux,strlen(aux));
+        memset(aux,0,BUFF_SIZE);
+        memset(buffer,0,BUFF_SIZE);
     
         sleep(1);
 
