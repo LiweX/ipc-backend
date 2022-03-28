@@ -1,5 +1,13 @@
 CFLAGS=-Wall -pedantic -Werror -Wextra -Wconversion -std=gnu11
 
+all: server client
+
+server: mainserver.c serverA.o
+	gcc $(CFLAGS) mainserver.c -o server serverA.o
+
+client: mainclient.c clientA.o
+	gcc $(CFLAGS) mainclient.c -o client clientA.o
+
 test1: sqltest1.c sqlite3.o
 	gcc sqltest1.c -o test sqlite3.o -ldl -pthread
 
@@ -10,7 +18,10 @@ sqlite3.o: sqlite3.c sqlite3.h
 	gcc -c sqlite3.c -o sqlite3.o
 
 serverA.o: serverA.c serverA.h
+	gcc $(CFLAGS) -c serverA.c
 
+clientA.o: clientA.c clientA.h
+	gcc $(CFLAGS) -c clientA.c
 
 clean:
-	rm -f *.o
+	rm -f *.o client server

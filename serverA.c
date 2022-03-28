@@ -14,7 +14,8 @@ int serverA(int port,char* address) {
 
     int sockfd;
     char buffer[BUFF_SIZE];
-    char result[BUFF_SIZE];
+    char *aux = (char *)malloc(sizeof(char));
+    char *result = (char *)malloc(sizeof(char));
 
     struct sockaddr_in servaddr, cliaddr;
        
@@ -30,7 +31,7 @@ int serverA(int port,char* address) {
     // Filling server information
     servaddr.sin_family    = AF_INET; // IPv4
     servaddr.sin_addr.s_addr = inet_addr(address);
-    servaddr.sin_port = htons(port);
+    servaddr.sin_port = htons((u_int16_t)port);
        
     // Bind the socket with the server address
     if ( bind(sockfd, (const struct sockaddr *)&servaddr, 
@@ -42,15 +43,17 @@ int serverA(int port,char* address) {
    
     while(1){
 
-        int len, n;
-        len = sizeof(cliaddr);  //len is value/resuslt
-        n = recvfrom(sockfd, (char *)buffer, BUFF_SIZE, 
+        unsigned int len = sizeof(cliaddr);  //len is value/resuslt
+        long int n = recvfrom(sockfd, (char *)buffer, BUFF_SIZE, 
             MSG_WAITALL, ( struct sockaddr *) &cliaddr,
             &len);
         buffer[n] = '\0';
-        printf("Client : %s\n", buffer);
         
-        sprintf(result,"Result: %s",buffer);
+        sprintf(aux,"Client : %s\n", buffer);
+        write(0,aux,strlen(aux));
+
+        sprintf(aux,"Result: %s",buffer);
+        strcpy(result,aux);
 
         sendto(sockfd, (const char *)result, strlen(result), 
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr,

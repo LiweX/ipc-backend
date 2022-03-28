@@ -6,23 +6,15 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <signal.h>
 
 #define BUFF_SIZE 1024
-int endprogram=1;
-
-void sig_handler(int signum){
-  printf("\nCerrando Cliente...\n");
-    endprogram=0;
-}
 
 // Driver code
 int clientA(int port,char *address) {
 
-    signal(SIGINT,sig_handler);
-
     int sockfd;
-    char buffer[BUFF_SIZE];
+    char *buffer = (char *)malloc(sizeof(char));
+    char *aux = (char *)malloc(sizeof(char));
     char *input = "SELECT * FROM Cars;";
 
     struct sockaddr_in servaddr;
@@ -37,26 +29,32 @@ int clientA(int port,char *address) {
        
     // Filling server information
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(port);
+    servaddr.sin_port = htons((u_int16_t)port);
     servaddr.sin_addr.s_addr = inet_addr(address);
 
-    while(endprogram){
+    while(1){
 
-        int n, len;
+        long int bytes;
+        unsigned int len;
         sendto(sockfd, (const char *)input, strlen(input),
             MSG_CONFIRM, (const struct sockaddr *) &servaddr, 
                 sizeof(servaddr));
-        printf("Query: %s.\n",input);
+
+        sprintf(aux,"Query: %s\n",input);
+
+        write(0,aux,strlen(aux));
             
-        n = recvfrom(sockfd, (char *)buffer, BUFF_SIZE, 
+        bytes = recvfrom(sockfd, (char *)buffer, BUFF_SIZE, 
                     MSG_WAITALL, (struct sockaddr *) &servaddr,
                     &len);
-        buffer[n] = '\0';
+        buffer[bytes] = '\0';
 
-        printf("Server : %s\n", buffer);
+        sprintf(aux,"Server: %s\n",buffer);
+
+        write(0,aux,strlen(aux));
     
         sleep(1);
 
     }
-    exit(EXIT_SUCCESS);
+    
 }
