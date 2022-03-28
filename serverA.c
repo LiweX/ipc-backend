@@ -55,7 +55,7 @@ int serverA(int port,char* address) {
         sprintf(aux,"Result: %s",buff_rx);
         strcpy(buff_tx,aux);
 
-        sendto(sockfd, (const char *)buff_tx, strlen(result), 
+        sendto(sockfd, (const char *)buff_tx, strlen(buff_tx), 
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
             len);
     }

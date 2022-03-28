@@ -8,9 +8,9 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <errno.h>
-#include <time.h>
 #include <signal.h>
 #include "serverA.h"
+#include "serverB.h"
 
 #define N_ARGS 2
 
@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
         printf("Invalid arguments\n");
         exit(EXIT_FAILURE);
     }
-    
+
     int port = atoi(argv[2]);
     char *ipv4address = argv[1];
 
@@ -31,6 +31,12 @@ int main(int argc, char* argv[]){
     if(pid==0){
         printf("Levantando servidor tipo A...\n");
         serverA(port,ipv4address);
+        exit(EXIT_SUCCESS);   
+    }
+    pid = fork();
+    if(pid==0){
+        printf("Levantando servidor tipo B...\n");
+        serverB(port,ipv4address);
         exit(EXIT_SUCCESS);   
     }
     while(1){

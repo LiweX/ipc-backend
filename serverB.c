@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
-#include "tools.h"
-#include <time.h>
 
 /* server parameters */
 #define BUFF_SIZE       1024*2              /* Buffer rx, tx max size  */
@@ -24,7 +22,8 @@ int serverB(int port, char* address)          /* input arguments are not used */
     struct sockaddr_in servaddr, client; 
     long int len_rx;                     /* received and sent length, in bytes */
     char buff_rx[BUFF_SIZE];   /* buffers for reception  */
-    char *aux = (char *)malloc(sizeof(char));
+    char buff_tx[BUFF_SIZE];   /* buffers for reception  */
+    char *aux = (char *)malloc(sizeof(char)*BUFF_SIZE);
 
     /* socket creation */
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
@@ -90,11 +89,10 @@ int serverB(int port, char* address)          /* input arguments are not used */
             } 
             else
             {  
-                long int bytesacumulados=0;
                 while(1) /* read data from a client socket till it is closed */ 
                 {     
                     len_rx = recv(connfd, buff_rx, BUFF_SIZE,0);
-
+                    
                     if(len_rx == -1)
                     {
                         fprintf(stderr, "[IPV4_TCP_SERVER-error]: connfd cannot be read. %d: %s \n", errno, strerror( errno ));
@@ -112,7 +110,12 @@ int serverB(int port, char* address)          /* input arguments are not used */
                         write(1,aux,strlen(aux));
 
                         sprintf(aux,"Result: %s",buff_rx);
-                        
+                        strcpy(buff_tx,aux);
+                        memset(aux,0,BUFF_SIZE);
+                        send(connfd,buff_tx,strlen(buff_tx),0);
+                        memset(buff_rx,0,BUFF_SIZE);
+                        memset(buff_tx,0,BUFF_SIZE);
+
                     }            
                 }  
             } 

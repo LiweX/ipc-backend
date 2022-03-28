@@ -13,8 +13,8 @@ int clientB(int port, char* address)
 { 
     int sockfd; 
     struct sockaddr_in servaddr;
-    int buff_tx[BUFF_SIZE];
-    int buff_rx[BUFF_SIZE];
+    char buff_tx[BUFF_SIZE];
+    char buff_rx[BUFF_SIZE];
 
     /* Socket creation */
     sockfd = socket(AF_INET, SOCK_STREAM, 0); //tpc socket
@@ -47,12 +47,13 @@ int clientB(int port, char* address)
     /* send test sequences*/
     while(1){
 
-        write(1,"\nClientB> ",100);
+        write(1,"\nClientB> ",10);
         read(0,buff_tx,BUFF_SIZE);
-        send(sockfd,buff_tx,strlen(buffer),0);
+        send(sockfd,buff_tx,strlen(buff_tx),0);
+        memset(buff_tx,0,BUFF_SIZE);
         recv(sockfd,buff_rx,BUFF_SIZE,0);
-        write(1,buff_rx,BUFF_SIZE);
-
+        write(1,buff_rx,strlen(buff_rx));
+        memset(buff_rx,0,BUFF_SIZE);
     }
    
     /* close the socket */

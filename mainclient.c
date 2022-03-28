@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include "clientA.h"
+#include "clientB.h"
 
 #define N_ARGS 3
 
@@ -24,6 +25,10 @@ int main(int argc, char* argv[]){
     if(strcmp(client_type,"A")==0){
         printf("Creando cliente tipo A...\n");
         clientA(port,address);
+    }
+    if(strcmp(client_type,"B")==0){
+        printf("Creando cliente tipo B...\n");
+        clientB(port,address);
     }
     exit(EXIT_SUCCESS);    
 }
