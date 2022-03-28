@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#define BUFF_SIZE 1024
+#define BUFF_SIZE 1024*2
 
 // Driver code
 int clientA(int port,char *address) {
@@ -42,7 +42,7 @@ int clientA(int port,char *address) {
 
         sprintf(aux,"Query: %s\n",input);
 
-        write(0,aux,strlen(aux));
+        write(1,aux,strlen(aux));
             
         bytes = recvfrom(sockfd, (char *)buffer, BUFF_SIZE, 
                     MSG_WAITALL, (struct sockaddr *) &servaddr,
@@ -51,7 +51,7 @@ int clientA(int port,char *address) {
 
         sprintf(aux,"Server: %s\n",buffer);
 
-        write(0,aux,strlen(aux));
+        write(1,aux,strlen(aux));
     
         sleep(1);
 

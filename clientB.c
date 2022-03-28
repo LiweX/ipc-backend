@@ -46,12 +46,12 @@ int clientB(int port, char* address)
   
     /* send test sequences*/
     while(1){
-        
-        write(0,"\nClientB> ",100);
+
+        write(1,"\nClientB> ",100);
         read(0,buff_tx,BUFF_SIZE);
         send(sockfd,buff_tx,strlen(buffer),0);
         recv(sockfd,buff_rx,BUFF_SIZE,0);
-        write(0,buff_rx,BUFF_SIZE);
+        write(1,buff_rx,BUFF_SIZE);
 
     }
    

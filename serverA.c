@@ -7,15 +7,15 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
    
-#define BUFF_SIZE 1024
+#define BUFF_SIZE 1024*2
    
 // Driver code
 int serverA(int port,char* address) {
 
     int sockfd;
-    char buffer[BUFF_SIZE];
+    char buff_rx[BUFF_SIZE];
     char *aux = (char *)malloc(sizeof(char));
-    char *result = (char *)malloc(sizeof(char));
+    char *buff_tx = (char *)malloc(sizeof(char));
 
     struct sockaddr_in servaddr, cliaddr;
        
@@ -44,18 +44,18 @@ int serverA(int port,char* address) {
     while(1){
 
         unsigned int len = sizeof(cliaddr);  //len is value/resuslt
-        long int n = recvfrom(sockfd, (char *)buffer, BUFF_SIZE, 
+        long int n = recvfrom(sockfd, (char *)buff_rx, BUFF_SIZE, 
             MSG_WAITALL, ( struct sockaddr *) &cliaddr,
             &len);
-        buffer[n] = '\0';
+        buff_rx[n] = '\0';
         
-        sprintf(aux,"Client : %s\n", buffer);
-        write(0,aux,strlen(aux));
+        sprintf(aux,"Client : %s\n", buff_rx);
+        write(1,aux,strlen(aux));
 
-        sprintf(aux,"Result: %s",buffer);
-        strcpy(result,aux);
+        sprintf(aux,"Result: %s",buff_rx);
+        strcpy(buff_tx,aux);
 
-        sendto(sockfd, (const char *)result, strlen(result), 
+        sendto(sockfd, (const char *)buff_tx, strlen(result), 
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
             len);
     }
