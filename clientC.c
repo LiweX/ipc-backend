@@ -9,13 +9,12 @@
 #include <net/if.h>
 
 #define BUFF_SIZE 1024*2
- 
 
 int clientC(int port,char*address,char*interface) 
 { 
     int sockfd; 
     struct sockaddr_in6 servaddr; 
-    char *request="Pasame la base de datos";
+    char *request="Pasame la base de datos\n";
     char buff_rx[BUFF_SIZE];
     /* Socket creation */
     sockfd = socket(PF_INET6, SOCK_STREAM, 0); 
@@ -50,9 +49,10 @@ int clientC(int port,char*address,char*interface)
 
     send(sockfd,request,strlen(request),0);
     
-    recv(sockfd,buff_rx,BUFF_SIZE,0);
+    long int len_rx = recv(sockfd,buff_rx,BUFF_SIZE,0);
+    buff_rx[len_rx]='\0';
     write(1,buff_rx,strlen(buff_rx));
-
+    
     /* close the socket */
     close(sockfd); 
     return 0;
