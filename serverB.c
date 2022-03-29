@@ -113,14 +113,17 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                     {
                         char *err_msg=0;
                         r = sqlite3_exec(db,buff_rx,callback,0,&err_msg);
+                        
                         if(r != SQLITE_OK){
+
                             memset(buff_tx,0,BUFF_SIZE);
                             sprintf(buff_tx, "Cannot process query: %s\n", sqlite3_errmsg(db));
                             send(connfd,buff_tx,strlen(buff_tx),0);
+
                         }
+
                         if(r == SQLITE_OK) send(connfd,buff_tx,strlen(buff_tx),0);
-                        // sprintf(aux,"Result: %s",buff_rx);
-                        // strcpy(buff_tx,aux);
+
                         memset(aux,0,BUFF_SIZE);
                         memset(buff_rx,0,BUFF_SIZE);
                         memset(buff_tx,0,BUFF_SIZE);

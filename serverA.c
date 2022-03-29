@@ -39,7 +39,6 @@ int serverA(int port,char* address,sqlite3* db) {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
-    
    
     while(1){
 
@@ -48,15 +47,19 @@ int serverA(int port,char* address,sqlite3* db) {
             MSG_WAITALL, ( struct sockaddr *) &cliaddr,
             &len);
         buff_rx[n] = '\0';
+
         memset(buff_tx,0,BUFF_SIZE);
         char *err_msg=0;
+
         int r = sqlite3_exec(db,buff_rx,callback,0,&err_msg);
+
         if(r != SQLITE_OK){
             sprintf(buff_tx, "Cannot process query: %s\n", sqlite3_errmsg(db));
             sendto(sockfd, (const char *)buff_tx, strlen(buff_tx), 
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
             len);
         }
+        
         if(r == SQLITE_OK){
             sendto(sockfd, (const char *)buff_tx, strlen(buff_tx), 
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
