@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "sqlite3.h"
 
 #define BUFF_SIZE 1024*2
 
@@ -41,8 +42,9 @@ int clientB(int port, char* address)
         printf("connection with the server failed...\n");  
         return -1;
     } 
-    
-    printf("connected to the server..\n"); 
+    memset(buff_rx,0,BUFF_SIZE);
+    recv(sockfd,buff_rx,BUFF_SIZE,0);
+    write(1,buff_rx,strlen(buff_rx));
   
     /* send test sequences*/
     while(1){
@@ -50,9 +52,12 @@ int clientB(int port, char* address)
         write(1,"\nClientB> ",10);
         read(0,buff_tx,BUFF_SIZE);
         send(sockfd,buff_tx,strlen(buff_tx),0);
-        memset(buff_tx,0,BUFF_SIZE);
+        
+
+
         recv(sockfd,buff_rx,BUFF_SIZE,0);
         write(1,buff_rx,strlen(buff_rx));
+        memset(buff_tx,0,BUFF_SIZE);
         memset(buff_rx,0,BUFF_SIZE);
     }
    

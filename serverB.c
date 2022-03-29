@@ -8,21 +8,24 @@
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
+#include "tools.h"
 
 /* server parameters */
 #define BUFF_SIZE       1024*2              /* Buffer rx, tx max size  */
 #define BACKLOG         5                 /* Max. client pending connections  */
 
+char buff_rx[BUFF_SIZE];   /* buffers for reception  */
+char buff_tx[BUFF_SIZE];   /* buffers for reception  */
+int callback(void *NotUsed, int argc, char **argv, char **azColName);
 
-int serverB(int port, char* address)          /* input arguments are not used */
+int serverB(int port, char* address, sqlite3 * db)          /* input arguments are not used */
 { 
     int sockfd;  /* listening socket and connection socket file descriptors */
     unsigned int len;     /* length of client address */
     int n_con=0;
     struct sockaddr_in servaddr, client; 
     long int len_rx;                     /* received and sent length, in bytes */
-    char buff_rx[BUFF_SIZE];   /* buffers for reception  */
-    char buff_tx[BUFF_SIZE];   /* buffers for reception  */
+
     char *aux = (char *)malloc(sizeof(char)*BUFF_SIZE);
 
     /* socket creation */
@@ -73,6 +76,7 @@ int serverB(int port, char* address)          /* input arguments are not used */
         printf("[IPV4_TCP_SERVER]: Listening on port %d \n\n", ntohs(servaddr.sin_port) ); 
     }
     len = sizeof(client);
+    int r;
     while(1)
     {
         int connfd = accept(sockfd, (struct sockaddr *)&client, &len);
@@ -88,7 +92,8 @@ int serverB(int port, char* address)          /* input arguments are not used */
                 exit(EXIT_FAILURE);       
             } 
             else
-            {  
+            {   
+                send(connfd,"Connected to the server...\n",27,0);
                 while(1) /* read data from a client socket till it is closed */ 
                 {     
                     len_rx = recv(connfd, buff_rx, BUFF_SIZE,0);
@@ -106,19 +111,38 @@ int serverB(int port, char* address)          /* input arguments are not used */
                     }
                     else
                     {
-                        sprintf(aux,"Client-%d: %s",n_con,buff_rx);
-                        write(1,aux,strlen(aux));
-
-                        sprintf(aux,"Result: %s",buff_rx);
-                        strcpy(buff_tx,aux);
+                        char *err_msg=0;
+                        r = sqlite3_exec(db,buff_rx,callback,0,&err_msg);
+                        if(r != SQLITE_OK){
+                            memset(buff_tx,0,BUFF_SIZE);
+                            sprintf(buff_tx, "Cannot process query: %s\n", sqlite3_errmsg(db));
+                            send(connfd,buff_tx,strlen(buff_tx),0);
+                        }
+                        if(r == SQLITE_OK) send(connfd,buff_tx,strlen(buff_tx),0);
+                        // sprintf(aux,"Result: %s",buff_rx);
+                        // strcpy(buff_tx,aux);
                         memset(aux,0,BUFF_SIZE);
-                        send(connfd,buff_tx,strlen(buff_tx),0);
                         memset(buff_rx,0,BUFF_SIZE);
                         memset(buff_tx,0,BUFF_SIZE);
-
                     }            
                 }  
             } 
         }
     }    
-} 
+}
+
+int callback(void *NotUsed, int argc, char **argv, 
+                    char **azColName) {
+    char aux[10000];
+    NotUsed = 0;
+    
+    for (int i = 0; i < argc; i++) {
+
+        sprintf(aux,"%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        strcat(buff_tx,aux);
+        memset(aux,0,10000);
+
+    }
+    NotUsed=NotUsed;    
+    return 0;
+}

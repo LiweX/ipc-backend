@@ -12,6 +12,7 @@
 #include "serverA.h"
 #include "serverB.h"
 #include "serverC.h"
+#include "tools.h"
 
 #define N_ARGS 4
 
@@ -29,6 +30,29 @@ int main(int argc, char* argv[]){
     char *ipv6address = argv[2];
     char *interface = argv[4];
 
+    //sqlite3 **dbs = (sqlite3 **)malloc(sizeof(sqlite3 *)*5);
+
+    sqlite3 *db;
+
+    int shared = shmget(ftok(".", 'S'),sizeof(db),
+            (IPC_CREAT | 0660));
+    if(shared < 0){
+        fprintf(stderr, "memoria compartida. %d: %s \n", errno, strerror( errno ));
+        exit(EXIT_FAILURE);
+    }
+
+    db = shmat(shared, 0, 0);
+    if(db == (void* )-1){
+        perror("No se asigno el segmento");
+        exit(EXIT_FAILURE);
+    }
+
+    int r = sqlite3_open_v2("test.db",&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
+    if(r!=SQLITE_OK){
+        fprintf(stderr, "Open error: %s\n", sqlite3_errmsg(db));
+        exit(EXIT_FAILURE);
+    }
+
     int pid;
     pid = fork();
     if(pid==0){
@@ -39,7 +63,7 @@ int main(int argc, char* argv[]){
     pid = fork();
     if(pid==0){
         printf("Levantando servidor tipo B...\n");
-        serverB(port,ipv4address);
+        serverB(port,ipv4address,db);
         exit(EXIT_SUCCESS);   
     }
     pid = fork();
@@ -52,3 +76,6 @@ int main(int argc, char* argv[]){
 
     }
 }
+
+
+
