@@ -9,6 +9,7 @@
 #include <stdlib.h> 
 #include <string.h>
 #include "tools.h"
+#include <time.h>
 
 /* server parameters */
 #define BUFF_SIZE       1024*2              /* Buffer rx, tx max size  */
@@ -25,7 +26,8 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
     int n_con=0;
     struct sockaddr_in servaddr, client; 
     long int len_rx;                     /* received and sent length, in bytes */
-
+    memset(buff_rx,0,BUFF_SIZE);
+    memset(buff_tx,0,BUFF_SIZE);
     char *aux = (char *)malloc(sizeof(char)*BUFF_SIZE);
 
     /* socket creation */
@@ -94,9 +96,11 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
             else
             {   
                 send(connfd,"Connected to the server...\n",27,0);
+                char logtime[100];
+                time_t rawtime;
                 while(1) /* read data from a client socket till it is closed */ 
                 {     
-                    len_rx = recv(connfd, buff_rx, BUFF_SIZE,0);
+                    len_rx = recv(connfd, buff_rx, BUFF_SIZE,0); // data reception
                     
                     if(len_rx == -1)
                     {
@@ -110,8 +114,19 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                         exit(EXIT_SUCCESS);
                     }
                     else
-                    {
-                        char *err_msg=0;
+                    {   
+                        memset(logtime,0,100);
+                        char * err_msg=0;
+                        struct tm * timeinfo;
+                        time(&rawtime);
+                        timeinfo = localtime(&rawtime);
+                        strftime(logtime,100,"%d/%m/%y - %H:%M:%S",timeinfo);
+                        write(1,logtime,100);
+                        buff_rx[len_rx-1]='\0';
+                        sqlite3_exec(db,"create table Log(Cmd TEXT,Time TEXT);",callback,0,&err_msg);
+                        memset(aux,0,BUFF_SIZE);
+                        sprintf(aux,"Insert into Log values('%s','%s');",buff_rx,logtime);
+                        sqlite3_exec(db,aux,callback,0,&err_msg);
                         r = sqlite3_exec(db,buff_rx,callback,0,&err_msg);
                         
                         if(r != SQLITE_OK){
@@ -121,11 +136,10 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                             send(connfd,buff_tx,strlen(buff_tx),0);
 
                         }
-
-                        if(r == SQLITE_OK) send(connfd,buff_tx,strlen(buff_tx),0);
-                        send(connfd,"",1,0);
-                        
-
+                        if(r == SQLITE_OK){
+                            if(strlen(buff_tx)==0) send(connfd," ",1,0);
+                            else send(connfd,buff_tx,strlen(buff_tx),0);
+                        }
 
                         memset(aux,0,BUFF_SIZE);
                         memset(buff_rx,0,BUFF_SIZE);

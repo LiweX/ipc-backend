@@ -49,15 +49,18 @@ int clientB(int port, char* address)
     /* send test sequences*/
     while(1){
 
+        memset(buff_tx,0,BUFF_SIZE);
         write(1,"\nClientB> ",10);
         read(0,buff_tx,BUFF_SIZE);
+        if(strlen(buff_tx)<2){
+            continue;
+        }
         send(sockfd,buff_tx,strlen(buff_tx),0);
         
 
 
         recv(sockfd,buff_rx,BUFF_SIZE,0);
         write(1,buff_rx,strlen(buff_rx));
-        memset(buff_tx,0,BUFF_SIZE);
         memset(buff_rx,0,BUFF_SIZE);
     }
    
