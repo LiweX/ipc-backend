@@ -9,11 +9,10 @@
 
 #define BUFF_SIZE 1024*2
 
-// Driver code
 int clientA(int port,char *address) {
 
     int sockfd;
-    char *buffer = (char *)malloc(sizeof(char)*BUFF_SIZE);
+    char buffer[BUFF_SIZE];
     char *aux = (char *)malloc(sizeof(char)*BUFF_SIZE);
     char *input = "SELECT * FROM Cars;";
 
@@ -40,17 +39,17 @@ int clientA(int port,char *address) {
             MSG_CONFIRM, (const struct sockaddr *) &servaddr, 
                 sizeof(servaddr));
 
-        sprintf(aux,"Query: %s\n",input);
+        // sprintf(aux,"Query: %s\n",input);
 
-        write(1,aux,strlen(aux));
-        memset(aux,0,BUFF_SIZE);
+        // write(1,aux,strlen(aux));
+        // memset(aux,0,BUFF_SIZE);
             
         bytes = recvfrom(sockfd, (char *)buffer, BUFF_SIZE, 
                     MSG_WAITALL, (struct sockaddr *) &servaddr,
                     &len);
         buffer[bytes] = '\0';
 
-        sprintf(aux,"Server: %s\n",buffer);
+        sprintf(aux,"Server:\n%s\n",buffer);
 
         write(1,aux,strlen(aux));
         memset(aux,0,BUFF_SIZE);

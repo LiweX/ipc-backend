@@ -6,16 +6,15 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include "tools.h"
    
 #define BUFF_SIZE 1024*2
-   
-// Driver code
-int serverA(int port,char* address) {
+char buff_rx[BUFF_SIZE];
+char buff_tx[BUFF_SIZE];
+
+int serverA(int port,char* address,sqlite3* db) {
 
     int sockfd;
-    char buff_rx[BUFF_SIZE];
-    char *aux = (char *)malloc(sizeof(char));
-    char *buff_tx = (char *)malloc(sizeof(char));
 
     struct sockaddr_in servaddr, cliaddr;
        
@@ -40,6 +39,7 @@ int serverA(int port,char* address) {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
+    
    
     while(1){
 
@@ -48,16 +48,34 @@ int serverA(int port,char* address) {
             MSG_WAITALL, ( struct sockaddr *) &cliaddr,
             &len);
         buff_rx[n] = '\0';
-        
-        sprintf(aux,"Client : %s\n", buff_rx);
-        write(1,aux,strlen(aux));
-
-        sprintf(aux,"Result: %s",buff_rx);
-        strcpy(buff_tx,aux);
-
-        sendto(sockfd, (const char *)buff_tx, strlen(buff_tx), 
+        memset(buff_tx,0,BUFF_SIZE);
+        char *err_msg=0;
+        int r = sqlite3_exec(db,buff_rx,callback,0,&err_msg);
+        if(r != SQLITE_OK){
+            sprintf(buff_tx, "Cannot process query: %s\n", sqlite3_errmsg(db));
+            sendto(sockfd, (const char *)buff_tx, strlen(buff_tx), 
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
             len);
+        }
+        if(r == SQLITE_OK){
+            sendto(sockfd, (const char *)buff_tx, strlen(buff_tx), 
+            MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
+            len);
+        }
+       
     }
     exit(EXIT_SUCCESS);
+}
+int callback(void *data, int argc, char **argv, 
+                    char **azColName) {
+    char aux[10000];
+    memset(data,0,0);
+    for (int i = 0; i < argc; i++) {
+
+        sprintf(aux,"%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        strcat(buff_tx,aux);
+        memset(aux,0,10000);
+
+    }
+    return 0;
 }

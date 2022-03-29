@@ -16,7 +16,7 @@
 
 char buff_rx[BUFF_SIZE];   /* buffers for reception  */
 char buff_tx[BUFF_SIZE];   /* buffers for reception  */
-int callback(void *NotUsed, int argc, char **argv, char **azColName);
+
 
 int serverB(int port, char* address, sqlite3 * db)          /* input arguments are not used */
 { 
@@ -131,18 +131,3 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
     }    
 }
 
-int callback(void *NotUsed, int argc, char **argv, 
-                    char **azColName) {
-    char aux[10000];
-    NotUsed = 0;
-    
-    for (int i = 0; i < argc; i++) {
-
-        sprintf(aux,"%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-        strcat(buff_tx,aux);
-        memset(aux,0,10000);
-
-    }
-    NotUsed=NotUsed;    
-    return 0;
-}

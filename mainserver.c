@@ -30,8 +30,6 @@ int main(int argc, char* argv[]){
     char *ipv6address = argv[2];
     char *interface = argv[4];
 
-    //sqlite3 **dbs = (sqlite3 **)malloc(sizeof(sqlite3 *)*5);
-
     sqlite3 *db;
 
     int shared = shmget(ftok(".", 'S'),sizeof(db),
@@ -57,7 +55,7 @@ int main(int argc, char* argv[]){
     pid = fork();
     if(pid==0){
         printf("Levantando servidor tipo A...\n");
-        serverA(port,ipv4address);
+        serverA(port,ipv4address,db);
         exit(EXIT_SUCCESS);   
     }
     pid = fork();
