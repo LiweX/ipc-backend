@@ -8,7 +8,8 @@
 #include <net/if.h>
 #include <errno.h>
 #include <stdio.h> 
-#include <string.h> 
+#include <string.h>
+#include "tools.h"
 
 /* server parameters */
 #define BUF_SIZE        1024*2               /* Buffer rx, tx max size  */

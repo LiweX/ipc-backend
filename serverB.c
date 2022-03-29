@@ -123,6 +123,9 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                         }
 
                         if(r == SQLITE_OK) send(connfd,buff_tx,strlen(buff_tx),0);
+                        send(connfd,"",1,0);
+                        
+
 
                         memset(aux,0,BUFF_SIZE);
                         memset(buff_rx,0,BUFF_SIZE);
