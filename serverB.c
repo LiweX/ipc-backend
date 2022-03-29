@@ -121,7 +121,6 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                         time(&rawtime);
                         timeinfo = localtime(&rawtime);
                         strftime(logtime,100,"%d/%m/%y - %H:%M:%S",timeinfo);
-                        write(1,logtime,100);
                         buff_rx[len_rx-1]='\0';
                         sqlite3_exec(db,"create table Log(Cmd TEXT,Time TEXT);",callback,0,&err_msg);
                         memset(aux,0,BUFF_SIZE);
