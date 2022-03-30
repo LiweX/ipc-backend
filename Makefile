@@ -45,4 +45,4 @@ obj/sqlite3.o: src/tools/sqlite3.c src/tools/sqlite3.h
 	gcc -c src/tools/sqlite3.c -o obj/sqlite3.o
 
 clean:
-	rm -f obj/*.o bin/client/client bin/server/server bin/tools/*
+	rm -f obj/*.o bin/client/* bin/server/* bin/tools/*
