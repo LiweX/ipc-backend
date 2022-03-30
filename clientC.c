@@ -13,6 +13,14 @@
 
 int clientC(int port,char*address,char*interface) 
 { 
+    char dbname[100];
+    bzero(dbname,100);
+    write(1,"Nombre del backup: ",19);
+    ssize_t bytes = read(0,dbname,100);
+    dbname[bytes-1]='\0';
+    strcat(dbname,".db");
+    write(1,dbname,strlen(dbname));
+
     int sockfd; 
     struct sockaddr_in6 servaddr; 
     char *request="Pasame la base de datos\n";
@@ -51,7 +59,7 @@ int clientC(int port,char*address,char*interface)
 
     send(sockfd,request,strlen(request),0);
 
-    recvFile("copydb.db",sockfd);
+    recvFile(dbname,sockfd);
 
 
     close(sockfd);

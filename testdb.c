@@ -1,5 +1,6 @@
 #include "sqlite3.h"  
 #include <stdio.h>
+#include <string.h>
 
 int callback(void *NotUsed, int argc, char **argv, 
                     char **azColName) {
@@ -20,6 +21,8 @@ int testdb(char* filename) {
 
     sqlite3 *db;
     char *err_msg = 0;
+    
+    strcat(filename,".db");
 
     int rc = sqlite3_open(filename, &db);
 

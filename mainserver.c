@@ -9,6 +9,7 @@
 #include <sys/ipc.h>
 #include <errno.h>
 #include <signal.h>
+#include <sys/mman.h>
 #include "serverA.h"
 #include "serverB.h"
 #include "serverC.h"
@@ -36,18 +37,15 @@ int main(int argc, char* argv[]){
 
     sqlite3 *db;
 
-    int shared = shmget(ftok(".", 'S'),sizeof(db),
-            (IPC_CREAT | 0660));
-    if(shared < 0){
-        fprintf(stderr, "memoria compartida. %d: %s \n", errno, strerror( errno ));
-        exit(EXIT_FAILURE);
-    }
+    db = (sqlite3 *)mmap(NULL, sizeof(db), 
+                        PROT_READ | PROT_WRITE, 
+                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-    db = shmat(shared, 0, 0);
-    if(db == (void* )-1){
+    if(db == MAP_FAILED){
         perror("No se asigno el segmento");
         exit(EXIT_FAILURE);
     }
+
 
     int r = sqlite3_open_v2(aux,&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
     if(r!=SQLITE_OK){
@@ -71,7 +69,7 @@ int main(int argc, char* argv[]){
     pid = fork();
     if(pid==0){
         printf("Levantando servidor tipo C...\n");
-        serverC(port,ipv6address,interface);
+        serverC(port,ipv6address,interface,db);
         exit(EXIT_SUCCESS);   
     }
     while(1){}

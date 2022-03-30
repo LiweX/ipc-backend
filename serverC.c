@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdio.h> 
 #include <string.h>
+#include <time.h>
 #include "sqlite3.h"
 #include "tools.h"
 
@@ -16,7 +17,7 @@
 #define BUF_SIZE        1024*2             /* Buffer rx, tx max size  */
 #define BACKLOG         5                 /* Max. client pending connections  */
 
-int serverC(int port, char* address,char* interface)          /* input arguments are not used */
+int serverC(int port, char* address,char* interface,sqlite3 *db)          /* input arguments are not used */
 { 
     int sockfd;  /* listening socket and connection socket file descriptors */
     unsigned int len;     /* length of client address */
@@ -89,7 +90,9 @@ int serverC(int port, char* address,char* interface)          /* input arguments
             } 
             else
             {   
-                send(connfd,"Connected to the server...\n",27,0);          
+                send(connfd,"Connected to the server...\n",27,0);
+                char logtime[100];
+                time_t rawtime;          
                 while(1) /* read data from a client socket till it is closed */ 
                 {  
                 /* read client message, copy it into buffer */
@@ -108,9 +111,22 @@ int serverC(int port, char* address,char* interface)          /* input arguments
                     }
                     else
                     {
-                        buff_rx[len_rx]='\0';
-                        write(1,buff_rx,strlen(buff_rx));
+                        // buff_rx[len_rx]='\0';
+                        // write(1,buff_rx,strlen(buff_rx));
+                        char *err_msg=0;
+                        struct tm * timeinfo;
+                        time(&rawtime);
+                        timeinfo = localtime(&rawtime);
+                        strftime(logtime,100,"%d/%m/%y - %H:%M:%S",timeinfo);
+                        char sql[1000];
+                        bzero(sql,1000);
+                        sprintf(sql,"insert into Log values('Backup request','%s')",logtime);
+                        sqlite3_exec(db,sql,callback,0,&err_msg);
+
                         sendFile("test.db",connfd);
+
+                        exit(EXIT_SUCCESS);
+
                     }            
                 }  
             }      
