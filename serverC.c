@@ -17,7 +17,7 @@
 #define BUF_SIZE        1024*2             /* Buffer rx, tx max size  */
 #define BACKLOG         5                 /* Max. client pending connections  */
 
-int serverC(int port, char* address,char* interface,sqlite3 *db)          /* input arguments are not used */
+int serverC(int port, char* address,char* interface,sqlite3 *db,char*dbname)          /* input arguments are not used */
 { 
     int sockfd;  /* listening socket and connection socket file descriptors */
     unsigned int len;     /* length of client address */
@@ -123,7 +123,7 @@ int serverC(int port, char* address,char* interface,sqlite3 *db)          /* inp
                         sprintf(sql,"insert into Log values('Backup request','%s')",logtime);
                         sqlite3_exec(db,sql,callback,0,&err_msg);
 
-                        sendFile("test.db",connfd);
+                        sendFile(dbname,connfd);
 
                         exit(EXIT_SUCCESS);
 

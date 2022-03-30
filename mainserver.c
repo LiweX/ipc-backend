@@ -30,10 +30,10 @@ int main(int argc, char* argv[]){
     char *ipv4address = argv[1];
     char *ipv6address = argv[2];
     char *interface = argv[4];
-    char *dbname = argv[5];
-    char aux[100];
-    bzero(aux,100);
-    sprintf(aux,"%s.db",dbname);
+    char dbname[100];
+    bzero(dbname,100);
+    strcpy(dbname,argv[5]);
+    strcat(dbname,".db");
 
     sqlite3 *db;
 
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
     }
 
 
-    int r = sqlite3_open_v2(aux,&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
+    int r = sqlite3_open_v2(dbname,&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
     if(r!=SQLITE_OK){
         fprintf(stderr, "Open error: %s\n", sqlite3_errmsg(db));
         exit(EXIT_FAILURE);
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]){
     pid = fork();
     if(pid==0){
         printf("Levantando servidor tipo C...\n");
-        serverC(port,ipv6address,interface,db);
+        serverC(port,ipv6address,interface,db,dbname);
         exit(EXIT_SUCCESS);   
     }
     while(1){}
