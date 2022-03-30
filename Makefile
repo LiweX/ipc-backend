@@ -39,4 +39,4 @@ tools.o: tools.c tools.h
 	gcc $(CFLAGS) -c tools.c
 
 clean:
-	rm -f *.o client server test test2 testdb createdb *.db
+	rm -f *.o client server testdb createdb *.db
