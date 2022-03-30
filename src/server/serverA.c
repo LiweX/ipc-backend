@@ -74,7 +74,7 @@ int serverA(int port,char* address,sqlite3* db) {
 int callback(void *data, int argc, char **argv, 
                     char **azColName) {
     char aux[10000];
-    memset(data,0,1);
+    data=data;
     for (int i = 0; i < argc; i++) {
 
         sprintf(aux,"%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
