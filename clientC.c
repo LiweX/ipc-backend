@@ -9,7 +9,7 @@
 #include <net/if.h>
 #include "tools.h"
 
-#define BUFF_SIZE 1000000
+#define BUFF_SIZE 1024
 
 int clientC(int port,char*address,char*interface) 
 { 
@@ -53,8 +53,8 @@ int clientC(int port,char*address,char*interface)
 
     recvFile("copydb.db",sockfd);
 
-    
+
     close(sockfd);
     
-    return 0;
+    exit(EXIT_SUCCESS);
 } 

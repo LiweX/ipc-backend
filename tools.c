@@ -21,7 +21,8 @@ void sendFile(char * filename , int connfd){
         if (nread < 1024)
         {
             if (feof(fp))
-            {
+            {   
+                write(1,"Transfer complete...\n",21);
                 write(connfd,"Todo OK!",8);
             }
             if (ferror(fp)) write(1,"Error reading\n",14);
@@ -34,7 +35,6 @@ void sendFile(char * filename , int connfd){
 void recvFile(char *filename ,int sockfd){
 
     char recvBuff[1024];
-    ssize_t bytes = 0;
 
     FILE *fp = fopen(filename, "ab");
     if(NULL == fp)
@@ -45,13 +45,13 @@ void recvFile(char *filename ,int sockfd){
 
     while(1)
     {
-        bytes = read(sockfd,recvBuff,1024);
-        fwrite(recvBuff, 1,(size_t)bytes,fp);
-        if(bytes<1024) break;
-    }
-    if(bytes < 0)
-    {
-        printf("\n Read Error \n");
+        bzero(recvBuff,1024);
+        size_t bytes = (size_t)read(sockfd,recvBuff,1024);
+        if(bytes>0) fwrite(recvBuff, 1,bytes,fp);
+        if(bytes<1024){
+            write(1,"Transfer complete...\n",21);
+            break;
+        } 
     }
     fclose(fp);
 }

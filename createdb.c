@@ -1,20 +1,26 @@
 #include "sqlite3.h"  
 #include <stdio.h>
+#include <stdlib.h>
+
+void createdb(void);
+
+int main(void){
+    createdb();
+    return 0;
+}
                                                                           
-int main(void) {
+void createdb(void) {
 
     sqlite3 *db;
-    sqlite3 *db2;
     char *err_msg = 0;
 
     int rc = sqlite3_open("test.db", &db);
-    int rb = sqlite3_open("test.db", &db2);
-    if(rc != SQLITE_OK || rb != SQLITE_OK ) {
+    if(rc != SQLITE_OK) {
 
         fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
         
-        return 1;
+        exit(EXIT_FAILURE);
     }
     char *sql = "DROP TABLE IF EXISTS Cars;"
                 "CREATE TABLE Cars(Id INT, Name TEXT, Price INT);"
@@ -27,18 +33,15 @@ int main(void) {
                 "INSERT INTO Cars VALUES(7, 'Hummer', 41400);"
                 "INSERT INTO Cars VALUES(8, 'Volkswagen', 21600);";
 
-    char *sql2 = "INSERT INTO Cars VALUES(101, 'Audi2', 52642);";
-
     rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
-    rb = sqlite3_exec(db2, sql2, 0, 0, &err_msg);
-    if (rc != SQLITE_OK || rb != SQLITE_OK) {
+    if (rc != SQLITE_OK) {
         fprintf(stderr, "SQL error: %s\n", err_msg);
 
         sqlite3_free(err_msg);
         sqlite3_close(db);
 
-        return 1;
+        exit(EXIT_FAILURE);
     }
     sqlite3_close(db);
-    return 0;
+    printf("Base de datos creada...\n");
 }

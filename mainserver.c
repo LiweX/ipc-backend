@@ -70,9 +70,7 @@ int main(int argc, char* argv[]){
         serverC(port,ipv6address,interface);
         exit(EXIT_SUCCESS);   
     }
-    while(1){
-
-    }
+    while(1){}
 }
 
 

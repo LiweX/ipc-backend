@@ -8,11 +8,11 @@ server: mainserver.c serverA.o serverB.o serverC.o sqlite3.o tools.o
 client: mainclient.c clientA.o clientB.o clientC.o tools.o
 	gcc $(CFLAGS) mainclient.c -o client clientA.o clientB.o clientC.o tools.o
 
-test1: sqltest1.c sqlite3.o
-	gcc sqltest1.c -o test sqlite3.o -ldl -pthread
+createdb: createdb.c sqlite3.o
+	gcc createdb.c -o createdb sqlite3.o -ldl -pthread
 
-test2: sqltest2.c sqlite3.o
-	gcc sqltest2.c -o test2 sqlite3.o -ldl -pthread
+testdb: testdb.c sqlite3.o
+	gcc testdb.c -o testdb sqlite3.o -ldl -pthread
 
 sqlite3.o: sqlite3.c sqlite3.h
 	gcc -c sqlite3.c -o sqlite3.o
@@ -39,4 +39,4 @@ tools.o: tools.c tools.h
 	gcc $(CFLAGS) -c tools.c
 
 clean:
-	rm -f *.o client server
+	rm -f *.o client server test test2 testdb createdb test.db

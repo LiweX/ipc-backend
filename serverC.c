@@ -111,8 +111,6 @@ int serverC(int port, char* address,char* interface)          /* input arguments
                         buff_rx[len_rx]='\0';
                         write(1,buff_rx,strlen(buff_rx));
                         sendFile("test.db",connfd);
-                        close(connfd);
-                        exit(EXIT_SUCCESS);
                     }            
                 }  
             }      

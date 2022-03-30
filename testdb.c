@@ -16,13 +16,12 @@ int callback(void *NotUsed, int argc, char **argv,
     return 0;
 }
                                                                           
-int main(void) {
+int testdb(char* filename) {
 
     sqlite3 *db;
-    
     char *err_msg = 0;
 
-    int rc = sqlite3_open("test.db", &db);
+    int rc = sqlite3_open(filename, &db);
 
     if(rc != SQLITE_OK) {
 
@@ -37,5 +36,10 @@ int main(void) {
     rc = sqlite3_exec(db, sql, callback, 0, &err_msg);
 
     sqlite3_close(db);
+    return 0;
+}
+
+int main(int argc, char *argv[]){
+    testdb(argv[1]);
     return 0;
 }
