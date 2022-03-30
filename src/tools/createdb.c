@@ -20,7 +20,7 @@ void createdb(char * dbname) {
     char *err_msg = 0;
     char aux[100];
     bzero(aux,100);
-    sprintf(aux,"%s.db",dbname);
+    sprintf(aux,"../server/%s.db",dbname);
 
     int rc = sqlite3_open(aux, &db);
     if(rc != SQLITE_OK) {
@@ -42,6 +42,7 @@ void createdb(char * dbname) {
                 "INSERT INTO Cars VALUES(8, 'Volkswagen', 21600);";
 
     rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
+    sqlite3_exec(db,"create table Log(Cmd TEXT,Time TEXT)",0,0,&err_msg);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "SQL error: %s\n", err_msg);
 

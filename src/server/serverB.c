@@ -120,14 +120,15 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                         struct tm * timeinfo;
                         time(&rawtime);
                         timeinfo = localtime(&rawtime);
-                        strftime(logtime,100,"%d/%m/%y - %H:%M:%S",timeinfo);
+                        strftime(logtime,99,"%d/%m/%y - %H:%M:%S",timeinfo);
                         buff_rx[len_rx-1]='\0';
 
                         char * err_msg=0;
-                        sqlite3_exec(db,"create table Log(Cmd TEXT,Time TEXT)",callback,0,&err_msg);
-                        bzero(aux,BUFF_SIZE);
-                        sprintf(aux,"Insert into Log values('%s','%s')",buff_rx,logtime);
-                        sqlite3_exec(db,aux,callback,0,&err_msg);
+
+                        sprintf(aux,"insert into log values(\"%s\",\"%s\")",buff_rx,logtime);
+
+                        sqlite3_exec(db,aux,0,0,&err_msg);
+
                         r = sqlite3_exec(db,buff_rx,callback,0,&err_msg);
                         
                         if(r != SQLITE_OK){
@@ -138,7 +139,7 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
 
                         }
                         if(r == SQLITE_OK){
-                            if(strlen(buff_tx)==0) send(connfd," ",1,0);
+                            if(strlen(buff_tx)==0)send(connfd," ",1,0);
                             else send(connfd,buff_tx,strlen(buff_tx),0);
                         }
 

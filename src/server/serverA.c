@@ -43,7 +43,7 @@ int serverA(int port,char* address,sqlite3* db) {
    
     while(1){
 
-        unsigned int len = sizeof(cliaddr);  //len is value/resuslt
+        unsigned int len = sizeof(cliaddr);
         long int n = recvfrom(sockfd, (char *)buff_rx, BUFF_SIZE, 
             MSG_WAITALL, ( struct sockaddr *) &cliaddr,
             &len);
