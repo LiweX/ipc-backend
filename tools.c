@@ -2,25 +2,57 @@
 #include <stdlib.h> 
 #include <string.h> 
 #include <unistd.h>
-#include "tools.h"
 
-void init_dbs(sqlite3 ** dbs){
+void sendFile(char * filename , int connfd){
 
-    int r1 = sqlite3_open("test.db", &dbs[0]);
-    int r2 = sqlite3_open("test.db", &dbs[1]);
-    int r3 = sqlite3_open("test.db", &dbs[2]);
-    int r4 = sqlite3_open("test.db", &dbs[3]);
-    int r5 = sqlite3_open("test.db", &dbs[4]);
-
-    if(r1 != SQLITE_OK || r2 != SQLITE_OK || r3 != SQLITE_OK || r4 != SQLITE_OK || r5 != SQLITE_OK) {
-
-        fprintf(stderr, "Cannot open databases: %s\n", sqlite3_errmsg(dbs[0]));
-        sqlite3_close(dbs[0]);
-        sqlite3_close(dbs[1]);
-        sqlite3_close(dbs[2]);
-        sqlite3_close(dbs[3]);
-        sqlite3_close(dbs[4]);
-        
+    write(1,"Starting transfer...\n",21);
+    FILE * fp = fopen(filename,"rb");
+    if(NULL == fp)
+    {
+        write(1,"Error opening file",18);
         exit(EXIT_FAILURE);
     }
+    while (1)
+    {
+        unsigned char buff[1024]={0};
+        bzero(buff,1024);
+        size_t nread = fread(buff,1,1024,fp);
+        if(nread>0) write(connfd, buff, nread);
+        if (nread < 1024)
+        {
+            if (feof(fp))
+            {
+                write(connfd,"Todo OK!",8);
+            }
+            if (ferror(fp)) write(1,"Error reading\n",14);
+            break;
+        }
+    }
+    fclose(fp);
 }
+
+void recvFile(char *filename ,int sockfd){
+
+    char recvBuff[1024];
+    ssize_t bytes = 0;
+
+    FILE *fp = fopen(filename, "ab");
+    if(NULL == fp)
+    {
+        printf("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    while(1)
+    {
+        bytes = read(sockfd,recvBuff,1024);
+        fwrite(recvBuff, 1,(size_t)bytes,fp);
+        if(bytes<1024) break;
+    }
+    if(bytes < 0)
+    {
+        printf("\n Read Error \n");
+    }
+    fclose(fp);
+}
+

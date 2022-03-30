@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
+#include "sqlite3.h"
 #include "tools.h"
 #include <time.h>
 
@@ -140,9 +141,9 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                             else send(connfd,buff_tx,strlen(buff_tx),0);
                         }
 
-                        memset(aux,0,BUFF_SIZE);
-                        memset(buff_rx,0,BUFF_SIZE);
-                        memset(buff_tx,0,BUFF_SIZE);
+                        bzero(aux,BUFF_SIZE);
+                        bzero(buff_rx,BUFF_SIZE);
+                        bzero(buff_tx,BUFF_SIZE);
                     }            
                 }  
             } 

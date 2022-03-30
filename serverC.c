@@ -9,10 +9,11 @@
 #include <errno.h>
 #include <stdio.h> 
 #include <string.h>
+#include "sqlite3.h"
 #include "tools.h"
 
 /* server parameters */
-#define BUF_SIZE        1024*2               /* Buffer rx, tx max size  */
+#define BUF_SIZE        1024*2             /* Buffer rx, tx max size  */
 #define BACKLOG         5                 /* Max. client pending connections  */
 
 int serverC(int port, char* address,char* interface)          /* input arguments are not used */
@@ -23,7 +24,6 @@ int serverC(int port, char* address,char* interface)          /* input arguments
 
     long int len_rx;                     /* received and sent length, in bytes */
     char buff_rx[BUF_SIZE];   /* buffers for reception  */
-    char *respuesta = "Aca tenes la base de datos\n";
       
     /* socket creation */
     sockfd = socket(AF_INET6, SOCK_STREAM, 0); //ipv6 tcp
@@ -88,11 +88,12 @@ int serverC(int port, char* address,char* interface)          /* input arguments
                 exit(EXIT_FAILURE);
             } 
             else
-            {             
+            {   
+                send(connfd,"Connected to the server...\n",27,0);          
                 while(1) /* read data from a client socket till it is closed */ 
                 {  
                 /* read client message, copy it into buffer */
-                len_rx = read(connfd, buff_rx, sizeof(buff_rx));
+                len_rx = recv(connfd, buff_rx, sizeof(buff_rx),0);
                  
                 
                     if(len_rx == -1)
@@ -109,7 +110,9 @@ int serverC(int port, char* address,char* interface)          /* input arguments
                     {
                         buff_rx[len_rx]='\0';
                         write(1,buff_rx,strlen(buff_rx));
-                        send(connfd,respuesta,strlen(respuesta),0);
+                        sendFile("test.db",connfd);
+                        close(connfd);
+                        exit(EXIT_SUCCESS);
                     }            
                 }  
             }      

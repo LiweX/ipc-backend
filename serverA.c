@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include "sqlite3.h"
 #include "tools.h"
    
 #define BUFF_SIZE 1024*2
@@ -69,6 +70,7 @@ int serverA(int port,char* address,sqlite3* db) {
     }
     exit(EXIT_SUCCESS);
 }
+
 int callback(void *data, int argc, char **argv, 
                     char **azColName) {
     char aux[10000];

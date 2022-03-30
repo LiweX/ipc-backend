@@ -5,8 +5,8 @@ all: server client
 server: mainserver.c serverA.o serverB.o serverC.o sqlite3.o tools.o
 	gcc $(CFLAGS) mainserver.c -o server serverA.o serverB.o serverC.o sqlite3.o tools.o -ldl -pthread
 
-client: mainclient.c clientA.o clientB.o clientC.o
-	gcc $(CFLAGS) mainclient.c -o client clientA.o clientB.o clientC.o
+client: mainclient.c clientA.o clientB.o clientC.o tools.o
+	gcc $(CFLAGS) mainclient.c -o client clientA.o clientB.o clientC.o tools.o
 
 test1: sqltest1.c sqlite3.o
 	gcc sqltest1.c -o test sqlite3.o -ldl -pthread

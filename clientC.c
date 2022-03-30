@@ -7,8 +7,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h> 
 #include <net/if.h>
+#include "tools.h"
 
-#define BUFF_SIZE 1024*2
+#define BUFF_SIZE 1000000
 
 int clientC(int port,char*address,char*interface) 
 { 
@@ -16,6 +17,7 @@ int clientC(int port,char*address,char*interface)
     struct sockaddr_in6 servaddr; 
     char *request="Pasame la base de datos\n";
     char buff_rx[BUFF_SIZE];
+    bzero(buff_rx,BUFF_SIZE);
     /* Socket creation */
     sockfd = socket(PF_INET6, SOCK_STREAM, 0); 
     if (sockfd == -1) 
@@ -43,17 +45,16 @@ int clientC(int port,char*address,char*interface)
         return -1;
     } 
     
-    printf("connected to the server..\n"); 
-  
-    printf("procedo a pedir la base de datos..\n");
+    recv(sockfd,buff_rx,BUFF_SIZE,0);
+    write(1,buff_rx,strlen(buff_rx));
+    write(1,"procedo a pedir la base de datos..\n",35);
 
     send(sockfd,request,strlen(request),0);
+
+    recvFile("copydb.db",sockfd);
+
     
-    long int len_rx = recv(sockfd,buff_rx,BUFF_SIZE,0);
-    buff_rx[len_rx]='\0';
-    write(1,buff_rx,strlen(buff_rx));
+    close(sockfd);
     
-    /* close the socket */
-    close(sockfd); 
     return 0;
 } 
