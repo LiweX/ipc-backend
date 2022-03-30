@@ -1,6 +1,6 @@
 CFLAGS=-Wall -pedantic -Werror -Wextra -Wconversion -std=gnu11
 
-all: server client
+all: server client createdb testdb
 
 server: mainserver.c serverA.o serverB.o serverC.o sqlite3.o tools.o
 	gcc $(CFLAGS) mainserver.c -o server serverA.o serverB.o serverC.o sqlite3.o tools.o -ldl -pthread
@@ -39,4 +39,4 @@ tools.o: tools.c tools.h
 	gcc $(CFLAGS) -c tools.c
 
 clean:
-	rm -f *.o client server test test2 testdb createdb test.db
+	rm -f *.o client server test test2 testdb createdb *.db
