@@ -1,42 +1,48 @@
 CFLAGS=-Wall -pedantic -Werror -Wextra -Wconversion -std=gnu11
 
-all: server client createdb testdb
+all: directories server client createdb testdb
 
-server: mainserver.c serverA.o serverB.o serverC.o sqlite3.o tools.o
-	gcc $(CFLAGS) mainserver.c -o server serverA.o serverB.o serverC.o sqlite3.o tools.o -ldl -pthread
+directories:
+	mkdir -p bin/client
+	mkdir -p bin/server
+	mkdir -p bin/tools
+	mkdir -p obj
 
-client: mainclient.c clientA.o clientB.o clientC.o tools.o
-	gcc $(CFLAGS) mainclient.c -o client clientA.o clientB.o clientC.o tools.o
+server: src/server/mainserver.c obj/tools.o obj/serverA.o obj/serverB.o obj/serverC.o obj/sqlite3.o
+	gcc $(CFLAGS) src/server/mainserver.c -o bin/server/server obj/serverA.o obj/serverB.o obj/serverC.o obj/sqlite3.o obj/tools.o -ldl -pthread
 
-serverA.o: serverA.c serverA.h
-	gcc $(CFLAGS) -c serverA.c
+client: src/client/mainclient.c obj/clientA.o obj/clientB.o obj/clientC.o obj/tools.o
+	gcc $(CFLAGS) src/client/mainclient.c -o bin/client/client obj/clientA.o obj/clientB.o obj/clientC.o obj/tools.o
 
-clientA.o: clientA.c clientA.h
-	gcc $(CFLAGS) -c clientA.c
+obj/serverA.o: src/server/serverA.c src/server/serverA.h
+	gcc $(CFLAGS) -c src/server/serverA.c -o obj/serverA.o
 
-serverB.o: serverB.c serverB.h
-	gcc $(CFLAGS) -c serverB.c
+obj/clientA.o: src/client/clientA.c src/client/clientA.h
+	gcc $(CFLAGS) -c src/client/clientA.c -o obj/clientA.o
 
-clientB.o: clientB.c clientB.h
-	gcc $(CFLAGS) -c clientB.c
+obj/serverB.o: src/server/serverB.c src/server/serverB.h
+	gcc $(CFLAGS) -c src/server/serverB.c -o obj/serverB.o
 
-serverC.o: serverC.c serverC.h
-	gcc $(CFLAGS) -c serverC.c
+obj/clientB.o: src/client/clientB.c src/client/clientB.h
+	gcc $(CFLAGS) -c src/client/clientB.c -o obj/clientB.o
 
-clientC.o: clientC.c clientC.h
-	gcc $(CFLAGS) -c clientC.c
+obj/serverC.o: src/server/serverC.c src/server/serverC.h
+	gcc $(CFLAGS) -c src/server/serverC.c -o obj/serverC.o
 
-tools.o: tools.c tools.h
-	gcc $(CFLAGS) -c tools.c
+obj/clientC.o: src/client/clientC.c src/client/clientC.h
+	gcc $(CFLAGS) -c src/client/clientC.c -o obj/clientC.o
 
-createdb: createdb.c sqlite3.o
-	gcc createdb.c -o createdb sqlite3.o -ldl -pthread
+obj/tools.o: src/tools/tools.c src/tools/tools.h
+	gcc $(CFLAGS) -c src/tools/tools.c -o obj/tools.o
 
-testdb: testdb.c sqlite3.o
-	gcc testdb.c -o testdb sqlite3.o -ldl -pthread
+createdb: src/tools/createdb.c obj/sqlite3.o
+	gcc src/tools/createdb.c -o bin/tools/createdb obj/sqlite3.o -ldl -pthread
 
-sqlite3.o: sqlite3.c sqlite3.h
-	gcc -c sqlite3.c -o sqlite3.o
+testdb: src/tools/testdb.c obj/sqlite3.o
+	gcc src/tools/testdb.c -o bin/tools/testdb obj/sqlite3.o -ldl -pthread
+
+obj/sqlite3.o: src/tools/sqlite3.c src/tools/sqlite3.h
+	gcc -c src/tools/sqlite3.c -o obj/sqlite3.o
 
 clean:
-	rm -f *.o client server testdb createdb *.db
+	rm -f obj/*.o bin/client/client bin/server/server bin/tools/*

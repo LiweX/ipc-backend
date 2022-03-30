@@ -1,1 +1,0 @@
-int serverC(int port, char* address,char* interface,sqlite3 *db,char*dbname);
