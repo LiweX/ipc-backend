@@ -1,20 +1,28 @@
 #include "sqlite3.h"  
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 
-void createdb(void);
+void createdb(char * dbname);
 
-int main(void){
-    createdb();
-    return 0;
+int main(int argc, char* argv[]){
+    if(argc!=2) {
+        printf("ERROR");
+        exit(EXIT_FAILURE);
+    }
+    createdb(argv[1]);
+    exit(EXIT_SUCCESS);
 }
                                                                           
-void createdb(void) {
+void createdb(char * dbname) {
 
     sqlite3 *db;
     char *err_msg = 0;
+    char aux[100];
+    bzero(aux,100);
+    sprintf(aux,"%s.db",dbname);
 
-    int rc = sqlite3_open("test.db", &db);
+    int rc = sqlite3_open(aux, &db);
     if(rc != SQLITE_OK) {
 
         fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));

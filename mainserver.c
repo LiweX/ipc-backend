@@ -14,7 +14,7 @@
 #include "serverC.h"
 #include "tools.h"
 
-#define N_ARGS 4
+#define N_ARGS 5
 
 int main(int argc, char* argv[]){
 
@@ -29,6 +29,10 @@ int main(int argc, char* argv[]){
     char *ipv4address = argv[1];
     char *ipv6address = argv[2];
     char *interface = argv[4];
+    char *dbname = argv[5];
+    char aux[100];
+    bzero(aux,100);
+    sprintf(aux,"%s.db",dbname);
 
     sqlite3 *db;
 
@@ -45,7 +49,7 @@ int main(int argc, char* argv[]){
         exit(EXIT_FAILURE);
     }
 
-    int r = sqlite3_open_v2("test.db",&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
+    int r = sqlite3_open_v2(aux,&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
     if(r!=SQLITE_OK){
         fprintf(stderr, "Open error: %s\n", sqlite3_errmsg(db));
         exit(EXIT_FAILURE);
