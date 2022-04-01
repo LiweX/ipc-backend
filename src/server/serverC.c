@@ -121,7 +121,7 @@ int serverC(int port, char* address,char* interface,sqlite3 *db,char*dbname)    
                         char sql[1000];
                         bzero(sql,1000);
                         sprintf(sql,"insert into Log values('Backup request','%s')",logtime);
-                        sqlite3_exec(db,sql,callback,0,&err_msg);
+                        sqlite3_exec(db,sql,0,0,&err_msg);
 
                         sendFile(dbname,connfd);
 

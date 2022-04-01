@@ -16,9 +16,11 @@
 #define BUFF_SIZE       1024*2              /* Buffer rx, tx max size  */
 #define BACKLOG         5                 /* Max. client pending connections  */
 
-// char buff_rx[BUFF_SIZE];   /* buffers for reception  */
-// char buff_tx[BUFF_SIZE];   /* buffers for reception  */
+char buff_rxB[BUFF_SIZE];   /* buffers for reception  */
+char buff_txB[BUFF_SIZE];   /* buffers for reception  */
 
+int callbackB(void *data, int argc, char **argv, 
+                    char **azColName);
 
 int serverB(int port, char* address, sqlite3 * db)          /* input arguments are not used */
 { 
@@ -27,10 +29,8 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
     int n_con=0;
     struct sockaddr_in servaddr, client; 
     long int len_rx;                     /* received and sent length, in bytes */
-    char buff_rx[BUFF_SIZE];
-    bzero(buff_rx,BUFF_SIZE);
-    // memset(buff_rx,0,BUFF_SIZE);
-    // memset(buff_tx,0,BUFF_SIZE);
+    bzero(buff_rxB,BUFF_SIZE);
+    bzero(buff_txB,BUFF_SIZE);
     char *aux = (char *)malloc(sizeof(char)*BUFF_SIZE);
 
     /* socket creation */
@@ -103,7 +103,7 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                 time_t rawtime;
                 while(1) /* read data from a client socket till it is closed */ 
                 {     
-                    len_rx = recv(connfd, buff_rx, BUFF_SIZE,0); // data reception
+                    len_rx = recv(connfd, buff_rxB, BUFF_SIZE,0); // data reception
                     
                     if(len_rx == -1)
                     {
@@ -123,31 +123,31 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                         time(&rawtime);
                         timeinfo = localtime(&rawtime);
                         strftime(logtime,99,"%d/%m/%y - %H:%M:%S",timeinfo);
-                        buff_rx[len_rx-1]='\0';
+                        buff_rxB[len_rx-1]='\0';
 
                         char * err_msg=0;
 
-                        sprintf(aux,"insert into log values(\"%s\",\"%s\")",buff_rx,logtime);
+                        sprintf(aux,"insert into log values(\"%s\",\"%s\")",buff_rxB,logtime);
 
                         sqlite3_exec(db,aux,0,0,&err_msg);
 
-                        r = sqlite3_exec(db,buff_rx,callback,0,&err_msg);
+                        r = sqlite3_exec(db,buff_rxB,callbackB,0,&err_msg);
                         
                         if(r != SQLITE_OK){
 
-                            memset(buff_tx,0,BUFF_SIZE);
-                            sprintf(buff_tx, "Cannot process query: %s\n", sqlite3_errmsg(db));
-                            send(connfd,buff_tx,strlen(buff_tx),0);
+                            bzero(buff_txB,BUFF_SIZE);
+                            sprintf(buff_txB, "Cannot process query: %s\n", sqlite3_errmsg(db));
+                            send(connfd,buff_txB,strlen(buff_txB),0);
 
                         }
                         if(r == SQLITE_OK){
-                            if(strlen(buff_tx)==0)send(connfd," ",1,0);
-                            else send(connfd,buff_tx,strlen(buff_tx),0);
+                            if(strlen(buff_txB)==0)send(connfd," ",1,0);
+                            else send(connfd,buff_txB,strlen(buff_txB),0);
                         }
 
                         bzero(aux,BUFF_SIZE);
-                        bzero(buff_rx,BUFF_SIZE);
-                        bzero(buff_tx,BUFF_SIZE);
+                        bzero(buff_rxB,BUFF_SIZE);
+                        bzero(buff_txB,BUFF_SIZE);
                     }            
                 }  
             } 
@@ -155,3 +155,16 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
     }    
 }
 
+int callbackB(void *data, int argc, char **argv, 
+                    char **azColName) {
+    char aux[10000];
+    data=data;
+    for (int i = 0; i < argc; i++) {
+
+        sprintf(aux,"%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        strcat(buff_txB,aux);
+        memset(aux,0,10000);
+
+    }
+    return 0;
+}

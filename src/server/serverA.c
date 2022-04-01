@@ -10,8 +10,11 @@
 #include "../tools/tools.h"
    
 #define BUFF_SIZE 1024*2
-char buff_rx[BUFF_SIZE];
-char buff_tx[BUFF_SIZE];
+char buff_rxA[BUFF_SIZE];
+char buff_txA[BUFF_SIZE];
+
+int callbackA(void *data, int argc, char **argv, 
+                    char **azColName);
 
 int serverA(int port,char* address,sqlite3* db) {
 
@@ -44,25 +47,25 @@ int serverA(int port,char* address,sqlite3* db) {
     while(1){
 
         unsigned int len = sizeof(cliaddr);
-        long int n = recvfrom(sockfd, (char *)buff_rx, BUFF_SIZE, 
+        long int n = recvfrom(sockfd, (char *)buff_rxA, BUFF_SIZE, 
             MSG_WAITALL, ( struct sockaddr *) &cliaddr,
             &len);
-        buff_rx[n] = '\0';
+        buff_rxA[n] = '\0';
 
-        memset(buff_tx,0,BUFF_SIZE);
+        bzero(buff_txA,BUFF_SIZE);
         char *err_msg=0;
 
-        int r = sqlite3_exec(db,buff_rx,callback,0,&err_msg);
+        int r = sqlite3_exec(db,buff_rxA,callbackA,0,&err_msg);
 
         if(r != SQLITE_OK){
-            sprintf(buff_tx, "Cannot process query: %s\n", sqlite3_errmsg(db));
-            sendto(sockfd, (const char *)buff_tx, strlen(buff_tx), 
+            sprintf(buff_txA, "Cannot process query: %s\n", sqlite3_errmsg(db));
+            sendto(sockfd, (const char *)buff_txA, strlen(buff_txA), 
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
             len);
         }
         
         if(r == SQLITE_OK){
-            sendto(sockfd, (const char *)buff_tx, strlen(buff_tx), 
+            sendto(sockfd, (const char *)buff_txA, strlen(buff_txA), 
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
             len);
         }
@@ -71,14 +74,14 @@ int serverA(int port,char* address,sqlite3* db) {
     exit(EXIT_SUCCESS);
 }
 
-int callback(void *data, int argc, char **argv, 
+int callbackA(void *data, int argc, char **argv, 
                     char **azColName) {
     char aux[10000];
     data=data;
     for (int i = 0; i < argc; i++) {
 
         sprintf(aux,"%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-        strcat(buff_tx,aux);
+        strcat(buff_txA,aux);
         memset(aux,0,10000);
 
     }
