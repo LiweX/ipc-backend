@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include "sqlite3.h"
+#include "../tools/sqlite3.h"
 #include "../tools/tools.h"
    
 #define BUFF_SIZE 1024*2

@@ -10,7 +10,7 @@
 #include <stdio.h> 
 #include <string.h>
 #include <time.h>
-#include "sqlite3.h"
+#include "../tools/sqlite3.h"
 #include "../tools/tools.h"
 
 /* server parameters */
