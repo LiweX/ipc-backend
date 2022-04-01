@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "sqlite3.h"
 
 #define BUFF_SIZE 1024*2
 
