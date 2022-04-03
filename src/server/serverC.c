@@ -10,14 +10,13 @@
 #include <stdio.h> 
 #include <string.h>
 #include <time.h>
-#include "../tools/sqlite3.h"
 #include "../tools/tools.h"
 
 /* server parameters */
 #define BUF_SIZE        1024*2             /* Buffer rx, tx max size  */
 #define BACKLOG         5                 /* Max. client pending connections  */
 
-int serverC(int port, char* address,char* interface,sqlite3 *db,char*dbname)          /* input arguments are not used */
+int serverC(int port, char* address,char* interface,sqlite3 **pool,int *flags,char* dbname)          /* input arguments are not used */
 { 
     int sockfd;  /* listening socket and connection socket file descriptors */
     unsigned int len;     /* length of client address */
@@ -91,6 +90,16 @@ int serverC(int port, char* address,char* interface,sqlite3 *db,char*dbname)    
             else
             {   
                 send(connfd,"Connected to the server...\n",27,0);
+                sqlite3 *db;
+                int n_db = get_db(flags);
+                if(n_db == 5){
+                    send(sockfd, "Empty pool", 9,0);
+                    continue;
+                }else{
+                    db = pool[n_db];
+                    flags[n_db]=1;
+                }
+                
                 char logtime[100];
                 time_t rawtime;          
                 while(1) /* read data from a client socket till it is closed */ 
@@ -106,13 +115,12 @@ int serverC(int port, char* address,char* interface,sqlite3 *db,char*dbname)    
                     else if(len_rx == 0) /* if length is 0 client socket closed, then exit */
                     {
                         printf("[IPV6_SERVER]: client %d socket closed \n\n",n_con);
+                        flags[n_db]=0;
                         close(connfd);
                         exit(EXIT_SUCCESS);
                     }
                     else
                     {
-                        // buff_rx[len_rx]='\0';
-                        // write(1,buff_rx,strlen(buff_rx));
                         char *err_msg=0;
                         struct tm * timeinfo;
                         time(&rawtime);

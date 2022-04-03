@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
-#include "../tools/sqlite3.h"
 #include "../tools/tools.h"
 #include <time.h>
 
@@ -22,7 +21,7 @@ char buff_txB[BUFF_SIZE];   /* buffers for reception  */
 int callbackB(void *data, int argc, char **argv, 
                     char **azColName);
 
-int serverB(int port, char* address, sqlite3 * db)          /* input arguments are not used */
+int serverB(int port, char* address, sqlite3 ** pool,int* flags)          /* input arguments are not used */
 { 
     int sockfd;  /* listening socket and connection socket file descriptors */
     unsigned int len;     /* length of client address */
@@ -98,9 +97,21 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
             } 
             else
             {   
-                send(connfd,"Connected to the server...\n",27,0);
+                sqlite3 *db;
+                
+                int n_db = get_db(flags);
+                if(n_db == 5){
+                    send(connfd, "\n\n##############\n  Empty pool   \n##############\n\n\0", 49,0);
+                    continue;
+                }else{
+                    db = pool[n_db];
+                    flags[n_db]=1;
+                    send(connfd,"Connected to the server...\n",27,0);
+                }
+
                 char logtime[100];
                 time_t rawtime;
+
                 while(1) /* read data from a client socket till it is closed */ 
                 {     
                     len_rx = recv(connfd, buff_rxB, BUFF_SIZE,0); // data reception
@@ -112,6 +123,7 @@ int serverB(int port, char* address, sqlite3 * db)          /* input arguments a
                     else if(len_rx == 0) /* if length is 0 client socket closed, then exit */
                     {
                         sprintf(aux,"[IPV4_TCP_SERVER]: client %d socket closed \n\n",n_con);
+                        flags[n_db]=0;
                         write(1,aux,strlen(aux));
                         close(connfd);
                         exit(EXIT_SUCCESS);

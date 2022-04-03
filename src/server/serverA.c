@@ -6,7 +6,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include "../tools/sqlite3.h"
 #include "../tools/tools.h"
    
 #define BUFF_SIZE 1024*2
@@ -16,7 +15,7 @@ char buff_txA[BUFF_SIZE];
 int callbackA(void *data, int argc, char **argv, 
                     char **azColName);
 
-int serverA(int port,char* address,sqlite3* db) {
+int serverA(int port,char* address,sqlite3** pool,int *flags) {
 
     int sockfd;
 
@@ -45,7 +44,6 @@ int serverA(int port,char* address,sqlite3* db) {
     }
    
     while(1){
-
         unsigned int len = sizeof(cliaddr);
         long int n = recvfrom(sockfd, (char *)buff_rxA, BUFF_SIZE, 
             MSG_WAITALL, ( struct sockaddr *) &cliaddr,
@@ -53,6 +51,20 @@ int serverA(int port,char* address,sqlite3* db) {
         buff_rxA[n] = '\0';
 
         bzero(buff_txA,BUFF_SIZE);
+
+        sqlite3 *db;
+
+        int n_db = get_db(flags);
+        if(n_db == 5){
+            sendto(sockfd, "Empty pool", 10, 
+            MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
+            len);
+            continue;
+        }else{
+            db = pool[n_db];
+            flags[n_db]=1;
+        }
+
         char *err_msg=0;
 
         int r = sqlite3_exec(db,buff_rxA,callbackA,0,&err_msg);
@@ -69,6 +81,8 @@ int serverA(int port,char* address,sqlite3* db) {
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
             len);
         }
+
+        flags[n_db]=0;
        
     }
     exit(EXIT_SUCCESS);

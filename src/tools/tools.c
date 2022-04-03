@@ -2,6 +2,7 @@
 #include <stdlib.h> 
 #include <string.h> 
 #include <unistd.h>
+#include "tools.h"
 
 void sendFile(char * filename , int connfd){
 
@@ -54,5 +55,27 @@ void recvFile(char *filename ,int sockfd){
         } 
     }
     fclose(fp);
+}
+
+void prepare_pool(sqlite3 **db,char * dbname,int* flags){
+
+    for(int i=0;i<POOL_SIZE;i++){
+        int r = sqlite3_open(dbname,&db[i]);
+        flags[i]=0;
+        if(r!=SQLITE_OK){
+        fprintf(stderr, "Open error: %s\n", sqlite3_errmsg(db[i]));
+        exit(EXIT_FAILURE);
+        }
+    }
+}
+
+int get_db(int* flags){
+    for(int i=0;i<POOL_SIZE;i++){
+        if(flags[i]==0){
+            flags[i]=1;
+            return i;
+        }
+    }
+    return 5;
 }
 

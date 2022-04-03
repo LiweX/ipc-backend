@@ -14,13 +14,13 @@ client: bin/client/client
 
 createdb: bin/tools/createdb
 
-testdb: bin/tools/createdb
+testdb: bin/tools/testdb
 
 bin/server/server: src/server/mainserver.c obj/tools.o obj/serverA.o obj/serverB.o obj/serverC.o obj/sqlite3.o
 	gcc $(CFLAGS) src/server/mainserver.c -o bin/server/server obj/serverA.o obj/serverB.o obj/serverC.o obj/sqlite3.o obj/tools.o -ldl -pthread
 
-bin/client/client: src/client/mainclient.c obj/clientA.o obj/clientB.o obj/clientC.o obj/tools.o
-	gcc $(CFLAGS) src/client/mainclient.c -o bin/client/client obj/clientA.o obj/clientB.o obj/clientC.o obj/tools.o
+bin/client/client: src/client/mainclient.c obj/clientA.o obj/clientB.o obj/clientC.o obj/tools.o obj/sqlite3.o
+	gcc $(CFLAGS) src/client/mainclient.c -o bin/client/client obj/clientA.o obj/clientB.o obj/clientC.o obj/tools.o obj/sqlite3.o -ldl -pthread
 
 obj/serverA.o: src/server/serverA.c src/server/serverA.h
 	gcc $(CFLAGS) -c src/server/serverA.c -o obj/serverA.o

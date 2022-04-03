@@ -35,45 +35,52 @@ int main(int argc, char* argv[]){
     strcpy(dbname,argv[5]);
     strcat(dbname,".db");
 
-    sqlite3 *db;
-
-    db = (sqlite3 *)mmap(NULL, sizeof(db), 
+    sqlite3** pool = (sqlite3 **)mmap(NULL, sizeof(sqlite3*)*POOL_SIZE, 
                         PROT_READ | PROT_WRITE, 
                         MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-    if(db == MAP_FAILED){
+    if(pool == MAP_FAILED){
         perror("No se asigno el segmento");
         exit(EXIT_FAILURE);
     }
 
+    int* flags = (int*)mmap(NULL, sizeof(int)*POOL_SIZE, 
+                    PROT_READ | PROT_WRITE, 
+                    MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-    int r = sqlite3_open_v2(dbname,&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
-    if(r!=SQLITE_OK){
-        fprintf(stderr, "Open error: %s\n", sqlite3_errmsg(db));
+    if(flags == MAP_FAILED){
+        perror("No se asigno el segmento");
         exit(EXIT_FAILURE);
     }
+
+    prepare_pool(pool,dbname,flags);
+
 
     int pid;
     pid = fork();
     if(pid==0){
         printf("Levantando servidor tipo A...\n");
-        serverA(port,ipv4address,db);
+        serverA(port,ipv4address,pool,flags);
         exit(EXIT_SUCCESS);   
     }
     pid = fork();
     if(pid==0){
         printf("Levantando servidor tipo B...\n");
-        serverB(port,ipv4address,db);
+        serverB(port,ipv4address,pool,flags);
         exit(EXIT_SUCCESS);   
     }
     pid = fork();
     if(pid==0){
         printf("Levantando servidor tipo C...\n");
-        serverC(port,ipv6address,interface,db,dbname);
+        serverC(port,ipv6address,interface,pool,flags,dbname);
         exit(EXIT_SUCCESS);   
     }
     while(1){}
 }
+
+
+
+
 
 
 
