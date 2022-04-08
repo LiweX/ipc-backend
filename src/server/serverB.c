@@ -169,7 +169,7 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)
 int callbackB(void *data, int argc, char **argv, 
                     char **azColName) {
     char aux[10000];
-    data=data;
+    (void)data;
     for (int i = 0; i < argc; i++) {
 
         sprintf(aux,"%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
