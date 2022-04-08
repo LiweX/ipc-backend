@@ -42,7 +42,7 @@ int serverA(int port,char* address,sqlite3** pool,int *flags) {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
-   
+    
     while(1){
         unsigned int len = sizeof(cliaddr);
         long int n = recvfrom(sockfd, (char *)buff_rxA, BUFF_SIZE, 
@@ -52,18 +52,9 @@ int serverA(int port,char* address,sqlite3** pool,int *flags) {
 
         bzero(buff_txA,BUFF_SIZE);
 
-        sqlite3 *db;
-
-        int n_db = get_db(flags);
-        if(n_db == 5){
-            sendto(sockfd, "Empty pool", 10, 
-            MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
-            len);
-            continue;
-        }else{
-            db = pool[n_db];
-            flags[n_db]=1;
-        }
+        
+        int *n_db = (int*)malloc(sizeof(int));
+        sqlite3 *db = get_db(pool,flags,n_db);
 
         char *err_msg=0;
 
@@ -82,7 +73,7 @@ int serverA(int port,char* address,sqlite3** pool,int *flags) {
             len);
         }
 
-        flags[n_db]=0;
+        release_db(*n_db,flags);
        
     }
     exit(EXIT_SUCCESS);

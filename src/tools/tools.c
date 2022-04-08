@@ -69,7 +69,7 @@ void prepare_pool(sqlite3 **db,char * dbname,int* flags){
     }
 }
 
-int get_db(int* flags){
+int get_db_index(int* flags){
     for(int i=0;i<POOL_SIZE;i++){
         if(flags[i]==0){
             flags[i]=1;
@@ -79,3 +79,19 @@ int get_db(int* flags){
     return 5;
 }
 
+sqlite3 * get_db(sqlite3 ** pool , int * flags,int *n_db){
+    while(1){
+        *n_db = get_db_index(flags);
+        if(*n_db == 5){
+            continue;
+        }else{
+            flags[*n_db]=1;
+            break;   
+        }
+    }
+    return pool[*n_db];
+}
+
+void release_db(int n_db,int* flags){
+    flags[n_db]=0;
+}

@@ -52,11 +52,8 @@ int clientA(int port,char *address) {
         sprintf(aux,"Server:\n%s\n",buffer);
 
         write(1,aux,strlen(aux));
-        memset(aux,0,BUFF_SIZE);
-        memset(buffer,0,BUFF_SIZE);
-    
-        sleep(1);
-
+        bzero(aux,BUFF_SIZE);
+        bzero(buffer,BUFF_SIZE);
     }
     
 }

@@ -16,7 +16,7 @@
 #define BUF_SIZE        1024*2             /* Buffer rx, tx max size  */
 #define BACKLOG         5                 /* Max. client pending connections  */
 
-int serverC(int port, char* address,char* interface,sqlite3 **pool,int *flags,char* dbname)          /* input arguments are not used */
+int serverC(int port, char* address,char* interface,sqlite3 **pool,int *flags,char* dbname)
 { 
     int sockfd;  /* listening socket and connection socket file descriptors */
     unsigned int len;     /* length of client address */
@@ -90,15 +90,6 @@ int serverC(int port, char* address,char* interface,sqlite3 **pool,int *flags,ch
             else
             {   
                 send(connfd,"Connected to the server...\n",27,0);
-                sqlite3 *db;
-                int n_db = get_db(flags);
-                if(n_db == 5){
-                    send(sockfd, "Empty pool", 9,0);
-                    continue;
-                }else{
-                    db = pool[n_db];
-                    flags[n_db]=1;
-                }
                 
                 char logtime[100];
                 time_t rawtime;          
@@ -115,7 +106,6 @@ int serverC(int port, char* address,char* interface,sqlite3 **pool,int *flags,ch
                     else if(len_rx == 0) /* if length is 0 client socket closed, then exit */
                     {
                         printf("[IPV6_SERVER]: client %d socket closed \n\n",n_con);
-                        flags[n_db]=0;
                         close(connfd);
                         exit(EXIT_SUCCESS);
                     }
@@ -129,7 +119,13 @@ int serverC(int port, char* address,char* interface,sqlite3 **pool,int *flags,ch
                         char sql[1000];
                         bzero(sql,1000);
                         sprintf(sql,"insert into Log values('Backup request','%s')",logtime);
+
+                        int *n_db=0;
+                        sqlite3 *db = get_db(pool,flags,n_db);
+
                         sqlite3_exec(db,sql,0,0,&err_msg);
+
+                        release_db(*n_db,flags);
 
                         sendFile(dbname,connfd);
 

@@ -21,7 +21,7 @@ char buff_txB[BUFF_SIZE];   /* buffers for reception  */
 int callbackB(void *data, int argc, char **argv, 
                     char **azColName);
 
-int serverB(int port, char* address, sqlite3 ** pool,int* flags)          /* input arguments are not used */
+int serverB(int port, char* address, sqlite3 ** pool,int* flags)
 { 
     int sockfd;  /* listening socket and connection socket file descriptors */
     unsigned int len;     /* length of client address */
@@ -97,20 +97,11 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)          /* inp
             } 
             else
             {   
-                sqlite3 *db;
                 
-                int n_db = get_db(flags);
-                if(n_db == 5){
-                    send(connfd, "\n\n##############\n  Empty pool   \n##############\n\n\0", 49,0);
-                    continue;
-                }else{
-                    db = pool[n_db];
-                    flags[n_db]=1;
-                    send(connfd,"Connected to the server...\n",27,0);
-                }
-
                 char logtime[100];
                 time_t rawtime;
+                char *msg = "Connected to server...";
+                send(connfd,msg,strlen(msg),0);
 
                 while(1) /* read data from a client socket till it is closed */ 
                 {     
@@ -123,7 +114,6 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)          /* inp
                     else if(len_rx == 0) /* if length is 0 client socket closed, then exit */
                     {
                         sprintf(aux,"[IPV4_TCP_SERVER]: client %d socket closed \n\n",n_con);
-                        flags[n_db]=0;
                         write(1,aux,strlen(aux));
                         close(connfd);
                         exit(EXIT_SUCCESS);
@@ -135,12 +125,15 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)          /* inp
                         time(&rawtime);
                         timeinfo = localtime(&rawtime);
                         strftime(logtime,99,"%d/%m/%y - %H:%M:%S",timeinfo);
-                        buff_rxB[len_rx-1]='\0';
 
-                        char * err_msg=0;
+                        buff_rxB[len_rx-1]='\0';
+                        
+                        int *n_db = (int*)malloc(sizeof(int));
+                        sqlite3 *db = get_db(pool,flags,n_db);
 
                         sprintf(aux,"insert into log values(\"%s\",\"%s\")",buff_rxB,logtime);
 
+                        char * err_msg=0;
                         sqlite3_exec(db,aux,0,0,&err_msg);
 
                         r = sqlite3_exec(db,buff_rxB,callbackB,0,&err_msg);
@@ -160,6 +153,12 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)          /* inp
                         bzero(aux,BUFF_SIZE);
                         bzero(buff_rxB,BUFF_SIZE);
                         bzero(buff_txB,BUFF_SIZE);
+
+                        if(n_db==NULL){
+                            perror("error de db");
+                            exit(EXIT_FAILURE);
+                        }else release_db(*n_db,flags);
+                        
                     }            
                 }  
             } 
@@ -180,3 +179,4 @@ int callbackB(void *data, int argc, char **argv,
     }
     return 0;
 }
+
