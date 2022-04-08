@@ -103,6 +103,12 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)
                 char *msg = "Connected to server...";
                 send(connfd,msg,strlen(msg),0);
 
+                int *n_db = (int*)malloc(sizeof(int));
+                sqlite3 *db = get_db(pool,flags,n_db);
+                sprintf(aux,"se esta usando la db%d por el cliente %d\n",*n_db,n_con);
+                write(1,aux,strlen(aux));
+
+
                 while(1) /* read data from a client socket till it is closed */ 
                 {     
                     len_rx = recv(connfd, buff_rxB, BUFF_SIZE,0); // data reception
@@ -115,6 +121,7 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)
                     {
                         sprintf(aux,"[IPV4_TCP_SERVER]: client %d socket closed \n\n",n_con);
                         write(1,aux,strlen(aux));
+                        release_db(*n_db,flags);
                         close(connfd);
                         exit(EXIT_SUCCESS);
                     }
@@ -128,9 +135,6 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)
 
                         buff_rxB[len_rx-1]='\0';
                         
-                        int *n_db = (int*)malloc(sizeof(int));
-                        sqlite3 *db = get_db(pool,flags,n_db);
-
                         sprintf(aux,"insert into log values(\"%s\",\"%s\")",buff_rxB,logtime);
 
                         char * err_msg=0;
@@ -153,11 +157,6 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)
                         bzero(aux,BUFF_SIZE);
                         bzero(buff_rxB,BUFF_SIZE);
                         bzero(buff_txB,BUFF_SIZE);
-
-                        if(n_db==NULL){
-                            perror("error de db");
-                            exit(EXIT_FAILURE);
-                        }else release_db(*n_db,flags);
                         
                     }            
                 }  

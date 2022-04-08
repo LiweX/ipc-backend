@@ -60,7 +60,7 @@ void recvFile(char *filename ,int sockfd){
 void prepare_pool(sqlite3 **db,char * dbname,int* flags){
 
     for(int i=0;i<POOL_SIZE;i++){
-        int r = sqlite3_open(dbname,&db[i]);
+        int r = sqlite3_open_v2(dbname,&db[i],SQLITE_OPEN_FULLMUTEX|SQLITE_OPEN_READWRITE,NULL);
         flags[i]=0;
         if(r!=SQLITE_OK){
         fprintf(stderr, "Open error: %s\n", sqlite3_errmsg(db[i]));
@@ -83,6 +83,8 @@ sqlite3 * get_db(sqlite3 ** pool , int * flags,int *n_db){
     while(1){
         *n_db = get_db_index(flags);
         if(*n_db == 5){
+            write(1,"waiting for a free db...\n",25);
+            sleep(1);
             continue;
         }else{
             flags[*n_db]=1;
