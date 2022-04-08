@@ -12,7 +12,7 @@
 #include <time.h>
 
 /* server parameters */
-#define BUFF_SIZE       1024*2              /* Buffer rx, tx max size  */
+#define BUFF_SIZE       1024*2*2              /* Buffer rx, tx max size  */
 #define BACKLOG         5                 /* Max. client pending connections  */
 
 char buff_rxB[BUFF_SIZE];   /* buffers for reception  */
@@ -138,13 +138,14 @@ int serverB(int port, char* address, sqlite3 ** pool,int* flags)
                         sprintf(aux,"insert into log values(\"%s\",\"%s\")",buff_rxB,logtime);
 
                         char * err_msg=0;
+                       /// write(1,aux,strlen(aux));
                         sqlite3_exec(db,aux,0,0,&err_msg);
-
+                       // write(1,buff_rxB,strlen(buff_rxB));
                         r = sqlite3_exec(db,buff_rxB,callbackB,0,&err_msg);
                         
                         if(r != SQLITE_OK){
-
                             bzero(buff_txB,BUFF_SIZE);
+                        //    write(1,buff_rxB,strlen(buff_rxB));
                             sprintf(buff_txB, "Cannot process query: %s\n", sqlite3_errmsg(db));
                             send(connfd,buff_txB,strlen(buff_txB),0);
 

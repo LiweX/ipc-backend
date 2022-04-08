@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define BUFF_SIZE 1024*2
+#define BUFF_SIZE 1024*2*2
 
 int clientB(int port, char* address) 
 { 
