@@ -13,10 +13,10 @@
 #include "../tools/tools.h"
 
 /* server parameters */
-#define BUF_SIZE        1024*2             /* Buffer rx, tx max size  */
+#define BUF_SIZE        1024             /* Buffer rx, tx max size  */
 #define BACKLOG         5                 /* Max. client pending connections  */
 
-int serverC(int port, char* address,char* interface,sqlite3 **pool,int *flags,char* dbname)
+int serverC(int port, char* address,char* interface,sqlite3*db,char* dbname)
 { 
     int sockfd;  /* listening socket and connection socket file descriptors */
     unsigned int len;     /* length of client address */
@@ -110,7 +110,7 @@ int serverC(int port, char* address,char* interface,sqlite3 **pool,int *flags,ch
                         exit(EXIT_SUCCESS);
                     }
                     else
-                    {
+                    {   
                         char *err_msg=0;
                         struct tm * timeinfo;
                         time(&rawtime);
@@ -120,12 +120,7 @@ int serverC(int port, char* address,char* interface,sqlite3 **pool,int *flags,ch
                         bzero(sql,1000);
                         sprintf(sql,"insert into Log values('Backup request','%s')",logtime);
 
-                        int *n_db=0;
-                        sqlite3 *db = get_db(pool,flags,n_db);
-
                         sqlite3_exec(db,sql,0,0,&err_msg);
-
-                        release_db(*n_db,flags);
 
                         sendFile(dbname,connfd);
 

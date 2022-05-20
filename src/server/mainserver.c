@@ -72,7 +72,7 @@ int main(int argc, char* argv[]){
     pid = fork();
     if(pid==0){
         printf("Levantando servidor tipo C...\n");
-        serverC(port,ipv6address,interface,pool,flags,dbname);
+        serverC(port,ipv6address,interface,pool[4],dbname);
         exit(EXIT_SUCCESS);   
     }
     while(1){}

@@ -1,4 +1,4 @@
-CFLAGS=-Wall -pedantic -Werror -Wextra -Wconversion -std=gnu11
+CFLAGS=#-Wall -pedantic -Werror -Wextra -Wconversion -std=gnu11
 
 all: server client createdb testdb
 
